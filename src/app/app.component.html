@@ -1,0 +1,181 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div>
+      <span class="eyebrow">Sistema interno</span>
+      <h1>Banca de Estudos</h1>
+      <p>Cadastro simples para organizar alunos, responsáveis e acompanhamento.</p>
+    </div>
+
+    <div class="topbar-badge">
+      <strong>{{ totalStudents }}</strong>
+      <span>alunos</span>
+    </div>
+  </header>
+
+  <section class="metrics" aria-label="Resumo dos alunos">
+    <article>
+      <span>Total</span>
+      <strong>{{ totalStudents }}</strong>
+    </article>
+
+    <article>
+      <span>Ativos</span>
+      <strong>{{ activeStudents }}</strong>
+    </article>
+
+    <article>
+      <span>Aguardando</span>
+      <strong>{{ waitingStudents }}</strong>
+    </article>
+  </section>
+
+  <main class="workspace">
+    <section class="panel form-panel" aria-labelledby="student-form-title">
+      <div class="section-heading">
+        <span class="eyebrow">Cadastro</span>
+        <h2 id="student-form-title">
+          {{ isEditing ? 'Editar aluno' : 'Novo aluno' }}
+        </h2>
+      </div>
+
+      <form [formGroup]="studentForm" (ngSubmit)="saveStudent()" class="student-form">
+        <label>
+          <span>Nome do aluno</span>
+          <input type="text" formControlName="name" placeholder="Ex.: Ana Clara Souza" />
+          @if (fieldHasError('name')) {
+            <small>Informe pelo menos 3 caracteres.</small>
+          }
+        </label>
+
+        <label>
+          <span>Responsável</span>
+          <input type="text" formControlName="guardian" placeholder="Ex.: Mariana Souza" />
+          @if (fieldHasError('guardian')) {
+            <small>Informe o nome do responsável.</small>
+          }
+        </label>
+
+        <label>
+          <span>Telefone</span>
+          <input type="tel" formControlName="phone" placeholder="Ex.: (81) 99999-9999" />
+          @if (fieldHasError('phone')) {
+            <small>Informe um telefone para contato.</small>
+          }
+        </label>
+
+        <div class="form-grid">
+          <label>
+            <span>Série/Ano</span>
+            <input type="text" formControlName="grade" placeholder="Ex.: 7º ano" />
+            @if (fieldHasError('grade')) {
+              <small>Informe a série do aluno.</small>
+            }
+          </label>
+
+          <label>
+            <span>Turno</span>
+            <select formControlName="shift">
+              @for (shift of shifts; track shift) {
+                <option [value]="shift">{{ shift }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>Situação</span>
+            <select formControlName="status">
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>Observações</span>
+          <textarea
+            rows="4"
+            formControlName="notes"
+            placeholder="Ex.: precisa reforçar matemática às terças"
+          ></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="primary-button">
+            {{ isEditing ? 'Salvar alterações' : 'Cadastrar aluno' }}
+          </button>
+
+          @if (isEditing) {
+            <button type="button" class="secondary-button" (click)="cancelEditing()">
+              Cancelar
+            </button>
+          }
+        </div>
+      </form>
+    </section>
+
+    <section class="panel list-panel" aria-labelledby="student-list-title">
+      <div class="section-heading">
+        <span class="eyebrow">Alunos</span>
+        <h2 id="student-list-title">Lista cadastrada</h2>
+      </div>
+
+      @if (students.length === 0) {
+        <div class="empty-state">
+          <strong>Nenhum aluno cadastrado ainda.</strong>
+          <p>Preencha o formulário ao lado para criar o primeiro cadastro.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Aluno</th>
+                <th>Responsável</th>
+                <th>Contato</th>
+                <th>Série</th>
+                <th>Turno</th>
+                <th>Situação</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (student of students; track student.id) {
+                <tr>
+                  <td>
+                    <strong>{{ student.name }}</strong>
+                    @if (student.notes) {
+                      <span>{{ student.notes }}</span>
+                    }
+                  </td>
+                  <td>{{ student.guardian }}</td>
+                  <td>{{ student.phone }}</td>
+                  <td>{{ student.grade }}</td>
+                  <td>{{ student.shift }}</td>
+                  <td>
+                    <span class="status" [class.waiting]="student.status === 'Aguardando'" [class.inactive]="student.status === 'Inativo'">
+                      {{ student.status }}
+                    </span>
+                  </td>
+                  <td>{{ formatDate(student.createdAt) }}</td>
+                  <td>
+                    <div class="row-actions">
+                      <button type="button" class="secondary-button" (click)="editStudent(student)">
+                        Editar
+                      </button>
+                      <button type="button" class="danger-button" (click)="removeStudent(student.id)">
+                        Remover
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </main>
+</div>
